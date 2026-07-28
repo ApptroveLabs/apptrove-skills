@@ -1,0 +1,19 @@
+{
+  "name": "@apptrove/skills",
+  "version": "1.0.0",
+  "description": "AI Coding Agent Skills for Apptrove SDK",
+  "bin": {
+    "apptrove-skills": "./bin/install.js"
+  },
+  "scripts": {
+    "start": "node ./bin/install.js"
+  },
+  "keywords": [
+    "apptrove",
+    "sdk",
+    "ai",
+    "claude",
+    "cursor"
+  ],
+  "license": "MIT"
+}
