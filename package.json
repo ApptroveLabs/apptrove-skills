@@ -15,5 +15,9 @@
     "claude",
     "cursor"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^15.0.0",
+    "fs-extra": "^11.4.0"
+  }
 }
