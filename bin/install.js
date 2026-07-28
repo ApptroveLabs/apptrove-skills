@@ -2,6 +2,7 @@
 
 const { Command } = require("commander");
 const detectAgent = require("../shared/utils/detect-agent");
+const installSkill = require("../shared/utils/install-skill");
 
 
 const program = new Command();
@@ -20,7 +21,7 @@ program
 
 
     console.log(
-        `\nInstalling ${platform} skill...\n`
+        `Installing ${platform} skill...\n`
     );
 
 
@@ -30,34 +31,39 @@ program
     if(agents.length === 0){
 
         console.log(
-            "No AI coding agent detected."
+            "No agent detected"
         );
 
-        console.log(
-            "Installing generic AGENTS.md format."
-        );
+        return;
 
     }
-    else{
-
-        console.log(
-            "Detected agents:"
-        );
 
 
-        agents.forEach(agent=>{
+    const agent = agents[0];
 
-            console.log(
-                `✓ ${agent}`
-            );
 
-        });
+    console.log(
+        `Detected: ${agent}`
+    );
 
-    }
+
+    const installedPath = installSkill(
+        agent,
+        platform
+    );
+
+
+    console.log(
+        "\nInstalled:"
+    );
+
+
+    console.log(
+        installedPath
+    );
 
 
 });
- 
 
 program.parse();
 
