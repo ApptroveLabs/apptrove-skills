@@ -1,18 +1,140 @@
-# Apptrove Android SDK Skill
+# Apptrove Android SDK Integration Skill
 
-## Purpose
 
-Integrate Apptrove SDK into Android applications.
+## Objective
 
-## Instructions
+Integrate Apptrove SDK into an Android application.
 
-When asked to integrate Apptrove:
 
-1. Detect Android project
-2. Add Apptrove SDK dependency
-3. Initialize SDK
-4. Configure deep links
-5. Configure Install Referrer
-6. Validate App Links
+## Project Analysis
 
-Always explain changes after modification.
+
+First inspect:
+
+
+- settings.gradle
+- build.gradle
+- app/build.gradle
+- AndroidManifest.xml
+- Application class
+
+
+Identify:
+
+- Package name
+- Application ID
+- Kotlin/Java project
+- Gradle version
+
+
+---
+
+## SDK Dependency
+
+
+Add Apptrove SDK dependency.
+
+
+Example:
+
+
+implementation("com.apptrove:apptrove-sdk:<version>")
+
+
+Place dependency inside:
+
+app/build.gradle
+
+
+---
+
+## SDK Initialization
+
+
+Find Application class.
+
+
+Kotlin example:
+
+
+class App : Application(){
+
+override fun onCreate(){
+
+super.onCreate()
+
+
+ApptroveSDK.initialize(
+    this,
+    "SDK_KEY"
+)
+
+
+}
+
+}
+
+
+---
+
+## Deep Link Setup
+
+
+Configure AndroidManifest:
+
+
+<intent-filter>
+
+<action android:name="android.intent.action.VIEW"/>
+
+<category android:name="android.intent.category.DEFAULT"/>
+
+<category android:name="android.intent.category.BROWSABLE"/>
+
+
+<data android:scheme="https"/>
+
+</intent-filter>
+
+
+---
+
+## Install Referrer
+
+
+Verify Google Play Install Referrer dependency.
+
+
+---
+
+## Validation
+
+
+After changes run:
+
+validators:
+
+- check-gradle
+- check-manifest
+- check-links
+
+
+---
+
+## Output
+
+
+Provide summary:
+
+
+SDK added:
+YES
+
+Initialization:
+YES
+
+Deep Links:
+YES
+
+Validation:
+PASSED

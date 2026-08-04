@@ -1,0 +1,22 @@
+package {{PACKAGE_NAME}}
+
+import android.app.Application
+import com.apptrove.sdk.ApptroveSDK
+
+
+class {{APPLICATION_CLASS}} : Application() {
+
+
+override fun onCreate() {
+
+super.onCreate()
+
+
+ApptroveSDK.initialize(
+    this,
+    "{{SDK_KEY}}"
+)
+
+}
+
+}
