@@ -1,19 +1,32 @@
 const analyzeAndroid =
 require("./android-analyzer");
 
-function analyze(projectPath){
+
+function analyzeProject(projectRoot) {
+
 
     const android =
-        analyzeAndroid(projectPath);
+        analyzeAndroid(projectRoot);
 
-    if(android.androidProject){
 
-        return android;
+    if(android && android.androidProject){
+
+        return {
+
+            platform:"android",
+
+            projectRoot,
+
+            ...android
+
+        };
 
     }
+
 
     return null;
 
 }
 
-module.exports = analyze;
+
+module.exports = analyzeProject;

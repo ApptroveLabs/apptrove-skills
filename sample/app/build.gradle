@@ -1,8 +1,7 @@
+
 dependencies {
 
-    // Apptrove SDK
-    implementation("com.apptrove:apptrove-sdk:1.0.0")
-
+    implementation "com.apptrove:sdk:latest"
 
     implementation("androidx.core:core-ktx:1.16.0")
 

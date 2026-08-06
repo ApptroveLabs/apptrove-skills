@@ -61,3 +61,8 @@ temp/
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+.gradle/
+**/.gradle/
+build/
+**/build/

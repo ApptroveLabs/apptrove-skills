@@ -2,75 +2,56 @@ const fs = require("fs-extra");
 const path = require("path");
 
 
-function addApptroveDependency(projectPath) {
+function addApptroveDependency(context){
 
 
-    const gradleFile = path.join(
-        projectPath,
-        "app",
-        "build.gradle"
-    );
+    const projectPath =
+        context.projectRoot;
 
 
-    if (!fs.existsSync(gradleFile)) {
-
-        throw new Error(
-            "app/build.gradle not found"
+    const gradleFile =
+        path.join(
+            projectPath,
+            "app/build.gradle"
         );
 
-    }
 
-
-    let content = fs.readFileSync(
-        gradleFile,
-        "utf8"
-    );
-
-
-    const dependency =
-        'implementation("com.apptrove:apptrove-sdk:1.0.0")';
-
-
-    // Avoid duplicate dependency
-
-    if (content.includes("com.apptrove:apptrove-sdk")) {
+    if(!fs.existsSync(gradleFile)){
 
         return {
-            changed: false,
-            message: "Apptrove SDK already exists"
+            changed:false,
+            message:"app/build.gradle not found"
         };
 
     }
 
 
-    const dependenciesIndex =
-        content.indexOf("dependencies {");
-
-
-    if (dependenciesIndex === -1) {
-
-        throw new Error(
-            "dependencies block not found"
+    let content =
+        fs.readFileSync(
+            gradleFile,
+            "utf8"
         );
+
+
+    if(content.includes("com.apptrove")){
+
+        return {
+            changed:false,
+            message:"Apptrove SDK dependency already exists"
+        };
 
     }
 
 
-    const insertPosition =
-        dependenciesIndex +
-        "dependencies {".length;
-
-
     content =
-        content.slice(0, insertPosition)
-        +
-        "\n\n    // Apptrove SDK\n    "
-        +
-        dependency
-        +
-        "\n"
-        +
-        content.slice(insertPosition);
+        content.replace(
+            /dependencies\s*\{/,
+`
+dependencies {
+
+    implementation "com.apptrove:sdk:latest"
+`
+        );
 
 
     fs.writeFileSync(
@@ -80,8 +61,8 @@ function addApptroveDependency(projectPath) {
 
 
     return {
-        changed: true,
-        message: "Apptrove SDK dependency added"
+        changed:true,
+        message:"Apptrove SDK dependency added"
     };
 
 }
