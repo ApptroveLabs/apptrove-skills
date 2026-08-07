@@ -1,18 +1,30 @@
-function printReport(report){
+const logger = require("../../core/utils/logger");
 
-    console.log("\n==============================");
-    logger.section("Apptrove Integration Report");
-    console.log("==============================");
+/**
+ * Print a formatted integration report for any platform InstallResult.
+ * @param {import('../../core/context/install-result')} result
+ * @param {object} [context]
+ */
+function printReport(result, context = {}) {
+  logger.section(`AppTrove ${result.platform} Integration Report`);
 
-    logger.info(`Dependency : ${report.dependency.message}`);
-    logger.info(`Application: ${report.application.message}`);
-    logger.info(`Manifest   : ${report.manifest.message}`);
+  const steps = result.steps || {};
+  for (const [name, step] of Object.entries(steps)) {
+    const msg = step && step.message ? step.message : JSON.stringify(step);
+    const mark = step && step.changed === false && step.found === false ? "⚠️ " : "✅ ";
+    console.log(`${mark}${name}: ${msg}`);
+  }
 
-    console.log("==============================\n");
+  if (context.hint) {
+    logger.warning(context.hint);
+  }
 
-    console.log("Validation  :", report.deepLink.validation);
-    console.log("Deep Link   :", report.deepLink ?report.deepLink.message : "Not executed");
+  if (context.nextSteps && context.nextSteps.length) {
+    console.log("\nNext steps:");
+    context.nextSteps.forEach((s, i) => console.log(`  ${i + 1}. ${s}`));
+  }
 
+  console.log("=================================\n");
 }
 
 module.exports = printReport;

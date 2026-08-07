@@ -1,110 +1,121 @@
 const fs = require("fs-extra");
+const constants = require("../../core/constants");
 
+const SDK_KEY = constants.placeholderSdkKey;
+const ENV = constants.defaultEnv;
 
-function injectApptrove(file){
+/**
+ * Inject AppTroveSDK.initialize(config) into an Application class file.
+ * @param {string} file
+ * @param {{ sdkKey?: string, env?: string }} [options]
+ */
+function injectApptrove(file, options = {}) {
+  const sdkKey = options.sdkKey || SDK_KEY;
+  const env = options.env || ENV;
 
+  let content = fs.readFileSync(file, "utf8");
 
-    let content =
-        fs.readFileSync(
-            file,
-            "utf8"
-        );
-
-
-    // Already integrated
-    if(
-        content.includes("AppTroveSDK.initialize")
-    ){
-
-        return {
-            changed:false,
-            message:"AppTrove SDK initialization already exists"
-        };
-
-    }
-
-
-
-    if(file.endsWith(".kt")) {
-
-
-        if(!content.includes("AppTroveSDK")) {
-
-
-            const sdkCode = `
-
-        val sdkConfig = AppTroveSDKConfig(
-            this,
-            "SDK_KEY",
-            "development"
-        )
-
-        AppTroveSDK.initialize(
-            sdkConfig
-        )
-`;
-
-            content = content.replace(
-                /override\s+fun\s+onCreate\s*\(\s*\)\s*\{/,
-`
-override fun onCreate(){
-
-${sdkCode}
-`
-            );
-
-
-            // Add imports
-            if(
-                !content.includes(
-                    "import com.apptrove.sdk.AppTroveSDK"
-                )
-            ){
-
-                content =
-                content.replace(
-                    /^package (.*)$/m,
-`
-package $1
-
-import com.apptrove.sdk.AppTroveSDK
-import com.apptrove.sdk.AppTroveSDKConfig
-`
-                );
-
-            }
-
-        }
-
-    }
-
-
-
-    fs.writeFileSync(
-        file,
-        content
-    );
-
-
-    // Verify actual injection happened
-    if(
-        content.includes("AppTroveSDK.initialize")
-    ){
-
-        return {
-            changed:true,
-            message:"AppTrove SDK initialization added"
-        };
-
-    }
-
-
+  if (content.includes("AppTroveSDK.initialize")) {
     return {
-        changed:false,
-        message:"Failed to inject AppTrove SDK initialization"
+      changed: false,
+      message: "AppTrove SDK initialization already exists"
     };
+  }
 
+  if (file.endsWith(".kt")) {
+    content = injectKotlin(content, sdkKey, env);
+  } else if (file.endsWith(".java")) {
+    content = injectJava(content, sdkKey, env);
+  } else {
+    return {
+      changed: false,
+      message: "Unsupported Application file type"
+    };
+  }
+
+  fs.writeFileSync(file, content);
+
+  if (content.includes("AppTroveSDK.initialize")) {
+    return {
+      changed: true,
+      message: "AppTrove SDK initialization added"
+    };
+  }
+
+  return {
+    changed: false,
+    message: "Failed to inject AppTrove SDK initialization"
+  };
 }
 
+function injectKotlin(content, sdkKey, env) {
+  const sdkCode = `
+        val sdkConfig = AppTroveSDKConfig(this, "${sdkKey}", "${env}")
+        AppTroveSDK.initialize(sdkConfig)
+`;
+
+  if (/override\s+fun\s+onCreate\s*\([^)]*\)\s*\{/.test(content)) {
+    content = content.replace(
+      /(override\s+fun\s+onCreate\s*\([^)]*\)\s*\{)/,
+      `$1\n${sdkCode}`
+    );
+  } else {
+    // Insert onCreate before closing brace of class
+    content = content.replace(
+      /\}\s*$/,
+      `
+    override fun onCreate() {
+        super.onCreate()
+${sdkCode}
+    }
+}
+`
+    );
+  }
+
+  if (!content.includes("import com.apptrove.sdk.AppTroveSDK")) {
+    content = content.replace(
+      /^package\s+(.+)$/m,
+      `package $1\n\nimport com.apptrove.sdk.AppTroveSDK\nimport com.apptrove.sdk.AppTroveSDKConfig`
+    );
+  }
+
+  return content;
+}
+
+function injectJava(content, sdkKey, env) {
+  const sdkCode = `
+        AppTroveSDKConfig sdkConfig = new AppTroveSDKConfig(this, "${sdkKey}", "${env}");
+        AppTroveSDK.initialize(sdkConfig);
+`;
+
+  if (/@Override[\s\n]*public\s+void\s+onCreate\s*\(\s*\)\s*\{/.test(content)) {
+    content = content.replace(
+      /(@Override[\s\n]*public\s+void\s+onCreate\s*\(\s*\)\s*\{)/,
+      `$1\n${sdkCode}`
+    );
+  } else {
+    content = content.replace(
+      /\}\s*$/,
+      `
+    @Override
+    public void onCreate() {
+        super.onCreate();
+${sdkCode}
+    }
+}
+`
+    );
+  }
+
+  if (!content.includes("import com.apptrove.sdk.AppTroveSDK;")) {
+    content = content.replace(
+      /^package\s+([^;]+);/m,
+      `package $1;\n\nimport com.apptrove.sdk.AppTroveSDK;\nimport com.apptrove.sdk.AppTroveSDKConfig;`
+    );
+  }
+
+  return content;
+}
 
 module.exports = injectApptrove;

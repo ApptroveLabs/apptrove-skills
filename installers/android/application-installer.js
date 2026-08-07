@@ -1,29 +1,18 @@
-const fs = require("fs-extra");
-const path = require("path");
+const scanApplication = require("../../core/analyzer/application-scanner");
+const injectApptrove = require("./application-modifier");
 
-function configureApplication(projectPath) {
-
-    const appDir = path.join(
-        projectPath,
-        "app",
-        "src",
-        "main"
-    );
-
-    if (!fs.existsSync(appDir)) {
-
-        return {
-            changed: false,
-            message: "app/src/main not found"
-        };
-
-    }
-
+/**
+ * Locate Application class and inject AppTrove init.
+ */
+function configureApplication(context, options = {}) {
+  const scan = scanApplication(context);
+  if (!scan.found || !scan.path) {
     return {
-        changed: false,
-        message: "Application installer not implemented yet"
+      changed: false,
+      message: scan.message
     };
-
+  }
+  return injectApptrove(scan.path, options);
 }
 
 module.exports = configureApplication;

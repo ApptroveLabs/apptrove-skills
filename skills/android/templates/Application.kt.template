@@ -1,22 +1,14 @@
 package {{PACKAGE_NAME}}
 
 import android.app.Application
-import com.apptrove.sdk.ApptroveSDK
-
+import com.apptrove.sdk.AppTroveSDK
+import com.apptrove.sdk.AppTroveSDKConfig
 
 class {{APPLICATION_CLASS}} : Application() {
 
-
-override fun onCreate() {
-
-super.onCreate()
-
-
-ApptroveSDK.initialize(
-    this,
-    "{{SDK_KEY}}"
-)
-
-}
-
+    override fun onCreate() {
+        super.onCreate()
+        val sdkConfig = AppTroveSDKConfig(this, "{{SDK_KEY}}", "development")
+        AppTroveSDK.initialize(sdkConfig)
+    }
 }

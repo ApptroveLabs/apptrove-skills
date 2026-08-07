@@ -1,21 +1,40 @@
 {
   "name": "@apptrove/skills",
   "version": "1.0.0",
-  "description": "AI Coding Agent Skills for Apptrove SDK",
+  "description": "AI Coding Agent Skills and SDK installer for AppTrove",
   "bin": {
     "apptrove-skills": "./bin/install.js"
   },
   "scripts": {
-    "start": "node ./bin/install.js"
+    "start": "node ./bin/install.js",
+    "test": "node --test tests/**/*.test.js",
+    "list": "node ./bin/install.js list",
+    "detect": "node ./bin/install.js detect"
   },
   "keywords": [
     "apptrove",
     "sdk",
     "ai",
     "claude",
-    "cursor"
+    "cursor",
+    "android",
+    "ios",
+    "flutter",
+    "react-native",
+    "expo",
+    "cordova"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin",
+    "core",
+    "installers",
+    "skills",
+    "README.md"
+  ],
   "dependencies": {
     "commander": "^15.0.0",
     "fs-extra": "^11.4.0"
