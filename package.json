@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "node ./bin/install.js",
-    "test": "node --test tests/**/*.test.js",
+    "test": "node --test tests/*.test.js",
     "list": "node ./bin/install.js list",
     "detect": "node ./bin/install.js detect"
   },
