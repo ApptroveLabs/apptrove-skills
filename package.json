@@ -1,5 +1,5 @@
 {
-  "name": "@apptrove/sdk-skills",
+  "name": "apptrove-sdk-skills",
   "version": "1.0.0",
   "description": "AI Coding Agent Skills and SDK installer for AppTrove",
   "bin": {
