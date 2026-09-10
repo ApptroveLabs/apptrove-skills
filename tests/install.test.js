@@ -147,8 +147,45 @@ class MyApplication : Application() {
     assert.equal(result.changed, true);
     const content = fs.readFileSync(file, "utf8");
     assert.match(content, /AppTroveSDKConfig\(this, "test-token", "development"\)/);
+    assert.match(content, /sdkConfig\.setAppSecret\("YOUR_SECRET_ID", "YOUR_SECRET_KEY"\)/);
     assert.match(content, /AppTroveSDK\.initialize/);
     assert.match(content, /import com\.apptrove\.sdk\.AppTroveSDK/);
+  });
+
+  it("adds SDK signing credentials when provided", () => {
+    const dir = makeTempDir("apptrove-signing-");
+    const file = path.join(dir, "MyApplication.kt");
+    fs.writeFileSync(
+      file,
+      `package com.example.app\n\nimport android.app.Application\n\nclass MyApplication : Application() {\n}`
+    );
+
+    injectApptrove(file, {
+      sdkSecretId: "secret-id",
+      sdkSecretKey: "secret-key"
+    });
+
+    const content = fs.readFileSync(file, "utf8");
+    assert.match(content, /sdkConfig\.setAppSecret\("secret-id", "secret-key"\)/);
+    fs.removeSync(dir);
+  });
+
+  it("generates Java-compatible SDK signing code", () => {
+    const dir = makeTempDir("apptrove-java-signing-");
+    const file = path.join(dir, "MyApplication.java");
+    fs.writeFileSync(
+      file,
+      `package com.example.app;\n\nimport android.app.Application;\n\npublic class MyApplication extends Application {\n}`
+    );
+
+    injectApptrove(file, {
+      sdkSecretId: "secret-id",
+      sdkSecretKey: "secret-key"
+    });
+
+    const content = fs.readFileSync(file, "utf8");
+    assert.match(content, /sdkConfig\.setAppSecret\("secret-id", "secret-key"\);/);
+    fs.removeSync(dir);
   });
 
   it("adds deep link intent-filter", () => {

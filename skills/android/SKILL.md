@@ -62,7 +62,7 @@ import com.apptrove.sdk.AppTroveSDKConfig
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val sdkConfig = AppTroveSDKConfig(this, "YOUR_APP_TOKEN", "development")
+        val sdkConfig = AppTroveSDKConfig("YOUR_APP_TOKEN", "development")
         // Optional SDK signing (from dashboard Advanced → Add secret key):
         // sdkConfig.setAppSecret("secretId", "secretKey")
         // Optional deferred deep link:

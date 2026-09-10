@@ -7,7 +7,7 @@ const ENV = constants.defaultEnv;
 /**
  * Inject AppTroveSDK.initialize(config) into an Application class file.
  * @param {string} file
- * @param {{ sdkKey?: string, env?: string }} [options]
+ * @param {{ sdkKey?: string, env?: string, sdkSecretId?: string, sdkSecretKey?: string }} [options]
  */
 function injectApptrove(file, options = {}) {
   const sdkKey = options.sdkKey || SDK_KEY;
@@ -23,9 +23,19 @@ function injectApptrove(file, options = {}) {
   }
 
   if (file.endsWith(".kt")) {
-    content = injectKotlin(content, sdkKey, env);
+    content = injectKotlin(
+      content,
+      sdkKey,
+      env,
+      getSigningCode(options.sdkSecretId, options.sdkSecretKey, false)
+    );
   } else if (file.endsWith(".java")) {
-    content = injectJava(content, sdkKey, env);
+    content = injectJava(
+      content,
+      sdkKey,
+      env,
+      getSigningCode(options.sdkSecretId, options.sdkSecretKey, true)
+    );
   } else {
     return {
       changed: false,
@@ -48,9 +58,20 @@ function injectApptrove(file, options = {}) {
   };
 }
 
-function injectKotlin(content, sdkKey, env) {
+function getSigningCode(secretId, secretKey, java) {
+  const suffix = java ? ";" : "";
+
+  if (secretId && secretKey) {
+    return `        sdkConfig.setAppSecret("${secretId}", "${secretKey}")${suffix}\n`;
+  }
+
+  return `        // sdkConfig.setAppSecret("YOUR_SECRET_ID", "YOUR_SECRET_KEY")${suffix}\n`;
+}
+
+function injectKotlin(content, sdkKey, env, signing) {
   const sdkCode = `
         val sdkConfig = AppTroveSDKConfig(this, "${sdkKey}", "${env}")
+${signing}
         AppTroveSDK.initialize(sdkConfig)
 `;
 
@@ -83,9 +104,10 @@ ${sdkCode}
   return content;
 }
 
-function injectJava(content, sdkKey, env) {
+function injectJava(content, sdkKey, env, signing) {
   const sdkCode = `
         AppTroveSDKConfig sdkConfig = new AppTroveSDKConfig(this, "${sdkKey}", "${env}");
+${signing}
         AppTroveSDK.initialize(sdkConfig);
 `;
 

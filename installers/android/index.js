@@ -7,7 +7,7 @@ const InstallResult = require("../../core/context/install-result");
 /**
  * Full Android AppTrove SDK installer.
  * @param {object} context
- * @param {{ sdkKey?: string, env?: string, deepLinkHost?: string }} [options]
+ * @param {{ sdkKey?: string, env?: string, sdkSecretId?: string, sdkSecretKey?: string, deepLinkHost?: string }} [options]
  */
 function install(context, options = {}) {
   console.log("\nInstalling Android AppTrove SDK...\n");
@@ -32,7 +32,9 @@ function install(context, options = {}) {
   if (application.found && application.path) {
     const init = injectApptrove(application.path, {
       sdkKey: options.sdkKey,
-      env: options.env
+      env: options.env,
+      sdkSecretId: options.sdkSecretId,
+      sdkSecretKey: options.sdkSecretKey
     });
     result.add("initialization", init);
   } else {

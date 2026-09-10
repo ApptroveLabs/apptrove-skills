@@ -4,16 +4,17 @@ package com.trackier.example_app_kotlin
 import android.app.Application
 import com.apptrove.sdk.ApptroveEvent
 import com.apptrove.sdk.ApptroveSDK
+import com.apptrove.sdk.AppTroveSDKConfig
 
 class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
-        ApptroveSDK.initialize(
-            this,
-            "YOUR_SDK_KEY"
-        )
+        val sdkConfig = AppTroveSDKConfig(this, "YOUR_SDK_KEY", "development")
+        sdkConfig.setAppSecret("YOUR_SECRET_ID", "YOUR_SECRET_KEY")
+        sdkConfig.setFacebookAppId("YOUR_FACEBOOK_APP_ID")
+        ApptroveSDK.initialize(sdkConfig)
 
         val event = ApptroveEvent("CUSTOM_EVENT_ID")
 
@@ -28,7 +29,6 @@ class MyApplication : Application() {
             "Plan" to "Premium",
             "Country" to "IN"
         )
-
         ApptroveSDK.setUserAdditionalDetails(userDetails)
 
         ApptroveSDK.trackEvent(event)

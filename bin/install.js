@@ -29,6 +29,8 @@ program
     `Platform: ${constants.platforms.join(" | ")}`
   )
   .option("--sdk-key <token>", "AppTrove app token / SDK key", constants.placeholderSdkKey)
+  .option("--sdk-secret-id <id>", "Optional SDK signing secret ID")
+  .option("--sdk-secret-key <key>", "Optional SDK signing secret key")
   .option("--env <env>", "SDK environment", constants.defaultEnv)
   .option("--deep-link-host <host>", "Android deep link host", "YOUR_SUBDOMAIN.u9ilnk.me")
   .option("--all-agents", "Install skill into every detected agent", false)
@@ -82,6 +84,8 @@ program
     const context = new ProjectContext(analysis);
     const result = install(context, {
       sdkKey: opts.sdkKey,
+      sdkSecretId: opts.sdkSecretId,
+      sdkSecretKey: opts.sdkSecretKey,
       env: opts.env,
       deepLinkHost: opts.deepLinkHost
     });
