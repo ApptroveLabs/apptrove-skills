@@ -57,25 +57,67 @@ describe("detectAgent", () => {
   });
 });
 
+// describe("installSkill", () => {
+//   it("copies android skill for claude-code", () => {
+//     const dir = makeTempDir("apptrove-skill-");
+//     fs.mkdirSync(path.join(dir, ".claude"));
+//     const dest = installSkill("claude-code", "android", dir);
+//     assert.ok(fs.existsSync(dest));
+//     const content = fs.readFileSync(dest, "utf8");
+//     assert.match(content, /com\.apptrove:android-sdk/);
+//     assert.match(content, /AppTroveSDK\.initialize/);
+//     fs.removeSync(dir);
+//   });
+
+//   it("has skills for every platform", () => {
+//     for (const platform of constants.platforms) {
+//       const skill = path.join(__dirname, "..", "skills", platform, "SKILL.md");
+//       assert.ok(fs.existsSync(skill), `missing skill: ${platform}`);
+//     }
+//   });
+// });
+
+
 describe("installSkill", () => {
   it("copies android skill for claude-code", () => {
     const dir = makeTempDir("apptrove-skill-");
-    fs.mkdirSync(path.join(dir, ".claude"));
     const dest = installSkill("claude-code", "android", dir);
+
     assert.ok(fs.existsSync(dest));
-    const content = fs.readFileSync(dest, "utf8");
-    assert.match(content, /com\.apptrove:android-sdk/);
-    assert.match(content, /AppTroveSDK\.initialize/);
+    assert.ok(fs.statSync(dest).isDirectory());
+
+    const skillFile = path.join(dest, "SKILL.md");
+    assert.ok(fs.existsSync(skillFile));
+
+    const content = fs.readFileSync(skillFile, "utf8");
+    const source = fs.readFileSync(
+      path.join(__dirname, "..", "skills", "android", "SKILL.md"),
+      "utf8"
+    );
+
+    assert.equal(content, source);
+    assert.ok(fs.existsSync(path.join(dest, "references")));
+    assert.ok(fs.existsSync(path.join(dest, "templates")));
+    assert.ok(fs.existsSync(path.join(dest, "validators")));
+
     fs.removeSync(dir);
   });
 
   it("has skills for every platform", () => {
     for (const platform of constants.platforms) {
-      const skill = path.join(__dirname, "..", "skills", platform, "SKILL.md");
+      const skill = path.join(
+        __dirname,
+        "..",
+        "skills",
+        platform,
+        "SKILL.md"
+      );
+
       assert.ok(fs.existsSync(skill), `missing skill: ${platform}`);
     }
   });
 });
+
 
 describe("android analyzer + gradle modifier", () => {
   let dir;

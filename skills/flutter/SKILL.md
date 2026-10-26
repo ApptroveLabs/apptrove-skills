@@ -1,93 +1,46 @@
-# AppTrove Flutter SDK Integration Skill
+---
+name: apptrove-flutter
+description: Integrate and troubleshoot AppTrove Flutter SDK v2, including initialization, events, deep links, deferred deep links, Meta Install Referrer, and iOS ATT/IDFA.
+---
 
-## Objective
+# AppTrove Flutter SDK Skill
 
-Integrate `apptrove_sdk_flutter` for attribution, events, and deep linking on Flutter (Android + iOS).
+Use this skill for AppTrove Flutter SDK integration and maintenance.
 
-## Install
+## Version policy
+Use AppTrove v2 (`apptrove_sdk_flutter`) for new integrations. Do not introduce legacy Trackier v1 (`trackier_sdk_flutter`, `Trackierfluttersdk`, `TrackerSDKConfig`, `TrackierEvent`) unless the user explicitly requests legacy support/migration. The official docs mark Trackier v1 as deprecated in August 2026.
 
-pubspec.yaml:
+## Read the relevant reference first
+- Installation/native setup: `references/installation.md`
+- Initialization: `references/initialization.md`
+- Events: `references/event-tracking.md`
+- Deep links: `references/deep-linking.md`
+- Deferred deep links: `references/deferred-deep-linking.md`
+- Meta Install Referrer: `references/meta-integration.md`
+- iOS ATT/IDFA: `references/app-tracking-transparency.md`
 
-```yaml
-dependencies:
-  apptrove_sdk_flutter: ^2.0.5
-```
+Official documentation:
+- https://developers.apptrove.com/docs/flutter-sdk/installation
+- https://developers.apptrove.com/docs/flutter-sdk/initialization
+- https://developers.apptrove.com/docs/flutter-sdk/event-tracking
+- https://developers.apptrove.com/docs/flutter-sdk/advance-features/deep-linking
+- https://developers.apptrove.com/docs/flutter-sdk/advance-features/deferred-deep-linking
+- https://developers.apptrove.com/docs/flutter-sdk/advance-features/meta-integration
+- https://developers.apptrove.com/docs/flutter-sdk/additional-features/app-tracking-transparency
 
-```bash
-flutter pub get
-cd ios && pod install
-```
+## Workflow
+1. Inspect `pubspec.yaml`, app startup, routing/navigation, `android/app/src/main/AndroidManifest.xml`, Android Gradle files, and `ios/Runner/Info.plist` before editing. Determine whether AppTrove v2 is already installed.
+2. Ask for or locate the actual SDK key, environment (`development`, `testing`, `production`), configured link host/scheme, event IDs, and Facebook App ID as applicable. Never invent values; use explicit placeholders if unavailable.
+3. Install only if missing: prefer `flutter pub add apptrove_sdk_flutter`, then `flutter pub get`. Do not upgrade unrelated packages or downgrade to match an example.
+4. Initialize the SDK once using AppTrove v2 APIs and preserve the project's startup architecture and environment.
+5. Implement only requested features. Read the corresponding reference file. Use real configured domains/routes/event IDs.
+6. Validate with `flutter pub get`, `flutter analyze`, relevant tests, and native build checks where available. Report only checks actually run.
+7. Summarize changed files, resolved SDK version, placeholders, manual setup, and actual validation results.
 
-## Imports
-
-```dart
-import 'package:apptrove_sdk_flutter/apptrovefluttersdk.dart';
-import 'package:apptrove_sdk_flutter/apptroveconfig.dart';
-import 'package:apptrove_sdk_flutter/apptroveevent.dart';
-```
-
-> Note: some mmp-dev-docs pages show `package:apptrove_sdk_flutter/apptrove_sdk_flutter.dart`, but that barrel file is **not** in the published package. Use the three imports above (matches Testing Apps + SDK source).
-
-## Initialization
-
-```dart
-final config = AppTroveSDKConfig("YOUR_APP_TOKEN", "development");
-// environments: development | production | testing
-
-config.deferredDeeplinkCallback = (deepLink) {
-  print(deepLink.url);
-};
-
-config.enableSkanAttribution(); // iOS
-AppTroveFlutterSdk.initializeSDK(config);
-```
-
-## Events + User
-
-```dart
-AppTroveFlutterSdk.setUserId("user-123");
-final event = AppTroveEvent(AppTroveEvent.LOGIN);
-AppTroveFlutterSdk.trackEvent(event);
-```
-
-## Deep Links
-
-```dart
-AppTroveFlutterSdk.parseDeeplink(url);
-await AppTroveFlutterSdk.resolveDeeplinkUrl(url);
-```
-
-Configure Android intent-filters and iOS Associated Domains (`applinks:YOUR_SUBDOMAIN.unilink.me`) in the native projects.
-
-## Android extras
-
-```gradle
-implementation 'com.android.installreferrer:installreferrer:2.2'
-implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
-```
-
-Permissions: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `com.google.android.gms.permission.AD_ID`
-
-## Push
-
-```dart
-AppTroveFlutterSdk.sendFcmToken(token);  // Android
-AppTroveFlutterSdk.sendAPNToken(token);  // iOS
-```
-
-## Validation Checklist
-
-- [ ] `apptrove_sdk_flutter` in pubspec
-- [ ] `AppTroveFlutterSdk.initializeSDK(config)` called at startup
-- [ ] Deferred callback set before init if needed
-- [ ] Native Android/iOS link + permission setup done
-- [ ] App token replaced
-
-## Output Summary
-
-```
-SDK added: YES/NO
-Initialization: YES/NO
-Deep Links: YES/NO
-Validation: PASSED/FAILED
-```
+## Safety rules
+- Make minimal, idempotent edits. Never replace entire app startup, router, manifest, plist, or Gradle files just to add SDK integration.
+- Avoid duplicate dependencies, permissions, initialization, manifest entries, and event calls.
+- Do not add optional permissions without a justified requirement.
+- ATT/IDFA depends on iOS version and user consent; do not promise availability.
+- Documentation sample domains are examples, not customer configuration.
+- If the installed package API differs from docs, inspect the actual package API/current official docs before coding.
