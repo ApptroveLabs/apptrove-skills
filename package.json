@@ -1,6 +1,6 @@
 {
   "name": "apptrove-sdk-skills",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "AI Coding Agent Skills and SDK installer for AppTrove",
   "bin": {
     "apptrove-skills": "./bin/install.js"
@@ -36,6 +36,7 @@
     "README.md"
   ],
   "dependencies": {
+    "apptrove-sdk-skills": "^1.0.1",
     "commander": "^15.0.0",
     "fs-extra": "^11.4.0"
   },
