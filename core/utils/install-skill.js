@@ -41,7 +41,12 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
         overwrite: true,
         errorOnExist: false,
         filter: (src) => {
-          const parts = src.split(path.sep);
+          // `src` is under node_modules when this code runs from an npx
+          // installation. Check only the path relative to the skill root so
+          // that the package's own parent `node_modules` directory does not
+          // cause every skill file to be filtered out.
+          const relativePath = path.relative(source, src);
+          const parts = relativePath.split(path.sep);
 
           return (
             !parts.includes("node_modules") &&
