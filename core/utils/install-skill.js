@@ -1,3 +1,4 @@
+
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -9,34 +10,45 @@ const path = require("path");
  * @returns {string} destination path
  */
 function installSkill(agent, platform, projectPath = process.cwd()) {
-  const source = path.join(
-    __dirname,
-    "../../skills",
-    platform,
-    "SKILL.md"
-  );
+  const source = path.resolve(__dirname, "../../skills", platform);
 
-  if (!fs.existsSync(source)) {
+  if (!fs.existsSync(source) || !fs.statSync(source).isDirectory()) {
     throw new Error(`Skill not found for platform: ${platform}`);
   }
 
+  const sourceSkillFile = path.join(source, "SKILL.md");
+
+  if (!fs.existsSync(sourceSkillFile)) {
+    throw new Error(`SKILL.md not found for platform: ${platform}`);
+  }
+
+  const root = path.resolve(projectPath);
   let destination;
 
   switch (agent) {
     case "claude-code":
       destination = path.join(
-        projectPath,
+        root,
         ".claude",
         "skills",
         "apptrove",
-        platform,
-        "SKILL.md"
+        platform
       );
-      break;
+
+      fs.ensureDirSync(path.dirname(destination));
+      fs.copySync(source, destination, {
+        overwrite: true,
+        errorOnExist: false,
+        filter: (src) =>
+          !src.split(path.sep).includes("node_modules") &&
+          !src.split(path.sep).includes(".DS_Store"),
+      });
+
+      return destination;
 
     case "cursor":
       destination = path.join(
-        projectPath,
+        root,
         ".cursor",
         "rules",
         `apptrove-${platform}.mdc`
@@ -45,7 +57,7 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
 
     case "copilot":
       destination = path.join(
-        projectPath,
+        root,
         ".github",
         "copilot-instructions.md"
       );
@@ -53,51 +65,74 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
 
     case "windsurf":
       destination = path.join(
-        projectPath,
+        root,
         ".windsurf",
         "rules",
         `apptrove-${platform}.md`
       );
       break;
 
+    case "agents-md":
+      destination = path.join(root, "AGENTS.md");
+      break;
+
     default:
-      destination = path.join(projectPath, "AGENTS.md");
+      throw new Error(`Unsupported agent: ${agent}`);
   }
 
   fs.ensureDirSync(path.dirname(destination));
 
-  // For shared destinations, append if Apptrove section missing
+  // Avoid duplicating AppTrove instructions in shared instruction files.
   if (
     (agent === "copilot" || agent === "agents-md") &&
     fs.existsSync(destination)
   ) {
     const existing = fs.readFileSync(destination, "utf8");
-    if (existing.includes("Apptrove") || existing.includes("AppTrove")) {
+    const marker = `<!-- apptrove-sdk-skills:${platform} -->`;
+
+    if (existing.includes(marker)) {
       return destination;
     }
-    const skill = fs.readFileSync(source, "utf8");
+
+    const skill = fs.readFileSync(sourceSkillFile, "utf8");
+
     fs.writeFileSync(
       destination,
-      `${existing.trim()}\n\n---\n\n${skill}\n`
+      `${existing.trimEnd()}\n\n${marker}\n${skill}\n`
     );
+
     return destination;
   }
 
-  fs.copyFileSync(source, destination);
+  // Cursor and Windsurf receive the main skill instructions.
+  // Their native rule files are not directory-based Claude skills.
+  const skill = fs.readFileSync(sourceSkillFile, "utf8");
+
+  fs.writeFileSync(
+    destination,
+    agent === "cursor"
+      ? `---\ndescription: AppTrove ${platform} SDK integration instructions\nalwaysApply: false\n---\n\n${skill}\n`
+      : skill
+  );
+
   return destination;
 }
 
 /**
- * Install skill into every detected agent.
+ * Install a platform skill into multiple detected agents.
  * @param {string[]} agents
  * @param {string} platform
  * @param {string} [projectPath]
  * @returns {{ agent: string, path: string }[]}
  */
-function installSkillToAgents(agents, platform, projectPath = process.cwd()) {
+function installSkillToAgents(
+  agents,
+  platform,
+  projectPath = process.cwd()
+) {
   return agents.map((agent) => ({
     agent,
-    path: installSkill(agent, platform, projectPath)
+    path: installSkill(agent, platform, projectPath),
   }));
 }
 
