@@ -1,4 +1,3 @@
-
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -26,7 +25,7 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
   let destination;
 
   switch (agent) {
-    case "claude-code":
+    case "claude-code": {
       destination = path.join(
         root,
         ".claude",
@@ -36,15 +35,57 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
       );
 
       fs.ensureDirSync(path.dirname(destination));
+
+      // Copy the complete skill directory, excluding unnecessary files.
       fs.copySync(source, destination, {
         overwrite: true,
         errorOnExist: false,
-        filter: (src) =>
-          !src.split(path.sep).includes("node_modules") &&
-          !src.split(path.sep).includes(".DS_Store"),
+        filter: (src) => {
+          const parts = src.split(path.sep);
+
+          return (
+            !parts.includes("node_modules") &&
+            path.basename(src) !== ".DS_Store"
+          );
+        },
       });
 
+      // Verify that the main skill file was copied.
+      const installedSkillFile = path.join(
+        destination,
+        "SKILL.md"
+      );
+
+      if (!fs.existsSync(installedSkillFile)) {
+        throw new Error(
+          `Installation failed: SKILL.md was not copied to ${destination}`
+        );
+      }
+
+      // Verify supporting directories when present in the source.
+      for (const directory of [
+        "references",
+        "templates",
+        "validators",
+      ]) {
+        const sourceDirectory = path.join(source, directory);
+        const installedDirectory = path.join(
+          destination,
+          directory
+        );
+
+        if (
+          fs.existsSync(sourceDirectory) &&
+          !fs.existsSync(installedDirectory)
+        ) {
+          throw new Error(
+            `Installation incomplete: ${directory} missing from ${destination}`
+          );
+        }
+      }
+
       return destination;
+    }
 
     case "cursor":
       destination = path.join(
@@ -105,7 +146,6 @@ function installSkill(agent, platform, projectPath = process.cwd()) {
   }
 
   // Cursor and Windsurf receive the main skill instructions.
-  // Their native rule files are not directory-based Claude skills.
   const skill = fs.readFileSync(sourceSkillFile, "utf8");
 
   fs.writeFileSync(
